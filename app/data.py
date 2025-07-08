@@ -1,6 +1,7 @@
 import pandas as pd
 import csv
 import os
+import matplotlib.pyplot as plt
 from collections import defaultdict
 from datetime import datetime
 
@@ -17,7 +18,8 @@ def revenue_report():
     monthly_revenue_report()
     calculate_total_category_expenses()
     calculate_monthly_category_expenses()
-
+    total_gross_profit_report()
+    show_monthly_gross_profit_trends()
 # --------------------------------
 # Revenue Handling Functions
 # --------------------------------
@@ -70,6 +72,61 @@ def monthly_revenue_report():
     for month in sorted(revenue_by_month):
         print(f"- {month}: ${revenue_by_month[month]:.2f}")
 
+def total_gross_profit_report():
+    file_path = "data/tailgate_bookings_list.csv"
+    if not os.path.exists(file_path):
+        print("❌ No bookings found.")
+        return
+
+    total_profit = 0.0
+    with open(file_path, mode="r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            try:
+                profit = float(row.get("gross_profit", 0) or 0)
+            except (ValueError, TypeError):
+                profit = 0.0
+            total_profit += profit
+
+    print(f"\n💰 Total Gross Profit Across All Tailgates: ${total_profit:.2f}")
+
+def show_monthly_gross_profit_trends():
+    file_path = "data/tailgate_bookings_list.csv"
+    if not os.path.exists(file_path):
+        print("❌ Booking file not found.")
+        return
+
+    monthly_profits = defaultdict(float)
+    with open(file_path, mode="r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if "event_date" in row and "gross_profit" in row:
+                try:
+                    date_obj = datetime.strptime(row["event_date"], "%Y-%m-%d")
+                    month = date_obj.strftime("%Y-%m")
+                    value = row.get("gross_profit")
+                    monthly_profits[month] += float(value or 0.0)
+                except (ValueError, KeyError):
+                    continue
+
+    print("\n📈 Monthly Gross Profit Trends:")
+    for month in sorted(monthly_profits):
+        print(f"{month}: ${monthly_profits[month]:.2f}")
+
+        # Sort the months and values
+        months_sorted = sorted(monthly_profits.keys())
+        profits_sorted = [monthly_profits[month] for month in months_sorted]
+
+        # Plot the results
+        plt.figure(figsize=(10, 5))
+        plt.plot(months_sorted, profits_sorted, marker='o', linestyle='-', linewidth=2)
+        plt.title("📈 Monthly Gross Profit Trends")
+        plt.xlabel("Month")
+        plt.ylabel("Gross Profit ($)")
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.grid(True)
+        plt.show()
 # --------------------------------
 # Expense Handling Functions
 # --------------------------------

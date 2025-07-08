@@ -1,12 +1,3 @@
-booking_id,event_name,event_date,event_deposit,event_invoice_total,total_event_labor_costs,total_event_food_costs,total_event_supplies_costs,total_expense
-cc5c0857,Phillies vs Rangers,2025-06-02,1000.00,2000.00,10.42,540.0,50.0,600.42
-cc5c0858,Phillies vs Padres,2025-07-02,1500.00,3000.00,10.42,540.0,50.0,600.42
-cc5c0859,Phillies vs Yankees,2025-08-02,2000.00,4000.00,10.42,540.0,50.0,600.42
-cc5c0860,Eagles vs Cowboys,2025-09-14,1800.00,3600.00,12.50,620.0,75.0,707.50
-cc5c0861,Eagles vs Giants,2025-10-06,1200.00,2500.00,12.50,620.0,75.0,707.50
-cc5c0862,Eagles vs Bears,2025-11-17,1300.00,2700.00,12.50,620.0,75.0,707.50
-cc5c0863,Concert: Taylor Swift,2025-06-20,1600.00,3100.00,15.00,700.0,100.0,815.00
-cc5c0864,Concert: Beyoncé,2025-07-22,1700.00,3200.00,15.00,700.0,100.0,815.00
-cc5c0865,Concert: Drake,2025-08-18,1500.00,2900.00,15.00,700.0,100.0,815.00
-cc5c0866,Army Navy Game,2025-12-14,2500.00,5000.00,20.00,800.0,150.0,970.00
-2c71a841,Eagles vs Bills,2025-12-05,2000.00,4000.00,6.25,1200.0,200.0,1406.25
+booking_id,client_id,event_name,event_date,event_deposit,event_invoice_total,total_event_labor_costs,total_event_food_costs,total_event_supplies_costs,total_expense,gross_profit
+
+4901cbb5,c1140ff2,Eagles vs Cowboys,2025-09-04,3000.00,6000.00,12.5,2250.0,588.0,2850.5,3149.50

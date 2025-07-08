@@ -1,10 +1,11 @@
 import csv
 import os
 from app.expenses import food_expense_calculator, labor_expense_calculator, supplies_expense_calculator
+from app.clients import select_client
 
 import uuid
 
-def save_tailgate_booking(event_name, event_date, event_deposit, event_invoice_total, total_food, total_labor, total_supplies, total_expense):
+def save_tailgate_booking(booking_id, client_id, event_name, event_date, event_deposit, event_invoice_total, total_food, total_labor, total_supplies, total_expense, gross_profit):
     file_path = "data/tailgate_bookings_list.csv"
     file_exists = os.path.exists(file_path)
 
@@ -13,6 +14,7 @@ def save_tailgate_booking(event_name, event_date, event_deposit, event_invoice_t
         if not file_exists:
             writer.writerow([
                 "booking_id",
+                "client_id"
                 "event_name",
                 "event_date",
                 "event_deposit",
@@ -20,11 +22,13 @@ def save_tailgate_booking(event_name, event_date, event_deposit, event_invoice_t
                 "total_event_labor_costs",
                 "total_event_food_costs",
                 "total_event_supplies_costs",
-                "total_expense"
+                "total_expense",
+                "gross_profit"
             ])
-        booking_id = str(uuid.uuid4())[:8]  # short unique ID
+
         writer.writerow([
             booking_id,
+            client_id,
             event_name,
             event_date,
             f"{event_deposit:.2f}",
@@ -32,7 +36,8 @@ def save_tailgate_booking(event_name, event_date, event_deposit, event_invoice_t
             total_food,
             total_labor,
             total_supplies,
-            total_expense
+            total_expense,
+            f"{gross_profit:.2f}"
         ])
 
     print(f"✅ Booking saved: {event_name} on {event_date} with ID {booking_id} and total ${total_expense}")
@@ -107,6 +112,7 @@ def delete_tailgate_booking(booking_id):
 
 def create_tailgate_booking():
     print("\n📋 Create New Tailgate Booking")
+    client = select_client()
     event_name = input("Event name (e.g. Eagles vs Cowboys): ").strip()
     event_date = input("Event date (YYYY-MM-DD): ").strip()
     event_deposit = float(input("Deposit received (e.g. 500.00): ").strip())
@@ -116,5 +122,7 @@ def create_tailgate_booking():
     total_labor = labor_expense_calculator()
     total_supplies = supplies_expense_calculator()
     total_expense = total_food + total_labor + total_supplies
-    save_tailgate_booking(event_name, event_date, event_deposit, event_invoice_total, total_food, total_labor, total_supplies, total_expense)
+    booking_id = str(uuid.uuid4())[:8]  # short unique ID
+    gross_profit = event_invoice_total - total_expense
+    save_tailgate_booking(booking_id, client["client_id"], event_name, event_date, event_deposit, event_invoice_total, total_food, total_labor, total_supplies, total_expense, gross_profit)
 

@@ -15,14 +15,22 @@ from app.data import (
     revenue_report
 )
 
+from app.clients import (
+    create_new_client,
+    edit_client,
+    delete_client,
+    generate_client_activity_report
+)
+
 def main():
     while True:
         print("\n========== TAILGATE EXPENSE TRACKER ==========")
         print("Choose a section:")
         print("1. 🧾 Tailgate Expenses")
         print("2. 📅 Tailgate Bookings")
-        print("3. Reports")
-        print("4. ❌ Exit")
+        print("3. 📅 Tailgate Clients")
+        print("4. Reports")
+        print("5. ❌ Exit")
 
         section_choice = input("Select section (1-3): ").strip()
 
@@ -89,7 +97,30 @@ def main():
                 else:
                     print("❌ Invalid option. Please try again.")
 
-        elif section_choice == '3':
+        elif section_choice == "3":
+            while True:
+                print("\n👥 Client Management")
+                print("1. Add Client")
+                print("2. Edit Client")
+                print("3. Delete Client")
+                print("4. Client Activity Report")
+                print("5. ⬅️ Back to Main Menu")
+
+                sub_choice = input("Choose an option: ").strip()
+                if sub_choice == "1":
+                    create_new_client()
+                elif sub_choice == "2":
+                    edit_client()
+                elif sub_choice == "3":
+                    delete_client()
+                elif sub_choice == '4':
+                    generate_client_activity_report()
+                elif choice == "5":
+                    break
+                else:
+                    print("❌ Invalid option. Please try again.")
+
+        elif section_choice == '4':
             print("\n📈 Reports")
             print("1. Total Revenue Report")
             sub_choice = input("Choose a report: ").strip()
@@ -97,7 +128,7 @@ def main():
             if sub_choice == '1':
                 revenue_report()
 
-        elif section_choice == "4":
+        elif section_choice == "5":
             print("👋 Exiting Expense Tracker.")
             break
 

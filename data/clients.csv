@@ -1,0 +1,4 @@
+client_id,first_name,last_name,email,phone,past_events,notes
+cl001,John,Doe,john@example.com,555-1234,"Eagles, Concerts",VIP client
+cl002,Jane,Smith,jane@example.com,555-5678,Phillies,Allergy-friendly catering
+c1140ff2,Ryan,Oakley,slayeroak9@gmail.com,7277291357,Eagles,Big spender
