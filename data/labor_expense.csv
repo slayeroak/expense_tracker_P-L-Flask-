@@ -1,0 +1,13 @@
+labor_role,event_type,cost
+Tailgate Host,Phillies,240.0
+Tailgate Host,Eagles,300.0
+Tailgate Host,Concert,270.0
+Tailgate Operator,Phillies,220.0
+Tailgate Operator,Eagles,280.0
+Tailgate Operator,Concert,250.0
+Grill Master,Phillies,300.0
+Grill Master,Concert,350.0
+Grill Master,Eagles,400.0
+Bartender,Phillies,325.0
+Bartender,Concert,375.0
+Bartender,Eagles,425.0
