@@ -1,52 +1,61 @@
-
-from flask import Blueprint, jsonify, request, abort
 import csv
 import os
 import uuid
+from flask import Blueprint, jsonify, request, abort
 
 clients_bp = Blueprint('clients', __name__)
 
-# Path to your CSV data file
-DATA_FILE = os.path.join(os.getcwd(), 'data', 'clients.csv')
-# CSV columns
+DATA_DIR  = os.path.join(os.getcwd(), 'data')
+DATA_FILE = os.path.join(DATA_DIR, 'clients.csv')
 FIELDNAMES = ["client_id", "first_name", "last_name", "email", "phone", "past_events", "notes"]
 
-def _load_clients():
-    """Read clients.csv into a list of dicts."""
+def _ensure_data_file():
+    # 1) Make sure the data/ folder exists
+    os.makedirs(DATA_DIR, exist_ok=True)
+    # 2) If the CSV doesn’t exist yet, create it with a header row
     if not os.path.exists(DATA_FILE):
-        return []
-    with open(DATA_FILE, newline='') as f:
+        with open(DATA_FILE, mode='w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
+            writer.writeheader()
+
+def _load_clients():
+    _ensure_data_file()
+    with open(DATA_FILE, mode='r', newline='') as f:
         return list(csv.DictReader(f))
 
 def _save_clients(clients):
-    """Write a list of client dicts back to clients.csv."""
-    with open(DATA_FILE, 'w', newline='') as f:
+    _ensure_data_file()
+    with open(DATA_FILE, mode='w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
         writer.writeheader()
         writer.writerows(clients)
 
 @clients_bp.route('/', methods=['GET'])
 def get_clients():
-    """Return all clients as JSON."""
     return jsonify(_load_clients())
 
 @clients_bp.route('/', methods=['POST'])
 def create_client():
-    """Create a new client from JSON payload."""
     data = request.get_json() or {}
-    new_client = {
-        "client_id": str(uuid.uuid4())[:8],
-        "first_name": data.get("first_name", ""),
-        "last_name":  data.get("last_name", ""),
-        "email":      data.get("email", ""),
-        "phone":      data.get("phone", ""),
-        "past_events":data.get("past_events", ""),
-        "notes":      data.get("notes", "")
-    }
+    # validate required fields
+    for field in ["first_name", "last_name", "email"]:
+        if not data.get(field):
+            abort(400, f"Missing required field: {field}")
+
     clients = _load_clients()
+    new_client = {
+        "client_id":   str(uuid.uuid4())[:8],
+        "first_name":  data["first_name"],
+        "last_name":   data["last_name"],
+        "email":       data["email"],
+        "phone":       data.get("phone", ""),
+        "past_events": data.get("past_events", ""),
+        "notes":       data.get("notes", "")
+    }
     clients.append(new_client)
     _save_clients(clients)
     return jsonify(new_client), 201
+
 
 @clients_bp.route('/<client_id>', methods=['PUT'])
 def update_client(client_id):

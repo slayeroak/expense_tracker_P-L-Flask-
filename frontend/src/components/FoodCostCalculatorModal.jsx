@@ -1,84 +1,84 @@
+// src/components/FoodCalculatorModal.jsx
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import ReactDOM                         from 'react-dom'
+import { calculateFood, getFoodItems }  from '../utils/api'
 
 export default function FoodCalculatorModal({ isOpen, onClose, onCalculate }) {
-  const [items, setItems]         = useState([])
   const [headcount, setHeadcount] = useState(0)
-  const [selected, setSelected]   = useState(new Set())
-  const [error, setError]         = useState(null)
+  const [items, setItems]         = useState([])
+  const [menu, setMenu]           = useState({})
 
   useEffect(() => {
-    if (!isOpen) return
-    axios.get('http://localhost:5001/api/expenses/food')
+    getFoodItems()
       .then(res => setItems(res.data))
-      .catch(() => setError('Failed to load menu items'))
-  }, [isOpen])
+      .catch(() => setItems([]))
+  }, [])
 
-  const toggleItem = item => {
-    setSelected(s => {
-      const nxt = new Set(s)
-      nxt.has(item) ? nxt.delete(item) : nxt.add(item)
-      return nxt
-    })
-  }
+  if (!isOpen) return null
 
-  const handleCalculate = async () => {
+  const toggleItem = name => setMenu(m => ({ ...m, [name]: !m[name] }))
+
+  const handleCompute = async () => {
+    const selected = Object.keys(menu).filter(i => menu[i])
     try {
-      const res = await axios.post(
-        'http://localhost:5001/api/expenses/calculate/food',
-        { headcount, menu: Array.from(selected) }
-      )
-      onCalculate({
-        total: res.data.total_food,
-        headcount,
-        menu: Array.from(selected)
-      })
+      const { data } = await calculateFood({ headcount, menu: selected })
+      onCalculate({ total: data.total_food, headcount, menu: selected })
       onClose()
     } catch {
-      setError('Calculation failed')
+      alert('Failed to calculate food cost')
     }
   }
 
-  if (!isOpen) return null
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4">🍔 Food Calculator</h2>
-        {error && <p className="text-red-600 mb-2">{error}</p>}
-        <div className="mb-4">
-          <label className="block mb-1">Headcount</label>
+  return ReactDOM.createPortal(
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg w-full max-w-md p-6"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-semibold">🍔 Food Calculator</h3>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            &times;
+          </button>
+        </div>
+
+        <label className="block mb-2">
+          Headcount:
           <input
             type="number"
-            className="w-full border px-3 py-2 rounded"
             value={headcount}
-            onChange={e => setHeadcount(Number(e.target.value))}
+            onChange={e => setHeadcount(+e.target.value || 0)}
+            className="w-full border p-2 rounded mt-1"
           />
-        </div>
-        <div className="mb-4 max-h-40 overflow-y-auto border rounded p-2">
-          {items.map(item => (
-            <label key={item.item} className="flex items-center mb-2">
+        </label>
+
+        <div className="space-y-2 mb-4 max-h-40 overflow-auto">
+          {items.map(({ item, amount, quantity }) => (
+            <label key={item} className="flex items-center">
               <input
                 type="checkbox"
+                checked={!!menu[item]}
+                onChange={() => toggleItem(item)}
                 className="mr-2"
-                checked={selected.has(item.item)}
-                onChange={() => toggleItem(item.item)}
               />
-              <span>{item.item} (qty: {item.quantity}, $ {item.amount})</span>
+              <span>
+                {item} — ${amount} per {quantity}
+              </span>
             </label>
           ))}
         </div>
-        <div className="flex justify-end space-x-2">
-          <button onClick={onClose} className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">
-            Cancel
-          </button>
-          <button
-            onClick={handleCalculate}
-            className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
-          >
-            Calculate
-          </button>
-        </div>
+
+        <button
+          onClick={handleCompute}
+          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+        >
+          Calculate & Save
+        </button>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

@@ -27,3 +27,8 @@ export const deleteClient   = id                 => API.delete(`/clients/${id}`)
 export const calculateFood      = payload => API.post('/expenses/calculate/food', payload)
 export const calculateSupplies  = payload => API.post('/expenses/calculate/supplies', payload)
 export const calculateLabor     = payload => API.post('/expenses/calculate/labor', payload)
+
+// Expense item listings
+export const getFoodItems     = () => API.get('/expenses/food')
+export const getSuppliesItems = () => API.get('/expenses/supplies')
+export const getLaborItems    = () => API.get('/expenses/labor')

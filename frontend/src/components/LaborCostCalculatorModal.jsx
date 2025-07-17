@@ -1,103 +1,103 @@
-// src/components/LaborCalculatorModal.jsx
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import { calculateLabor, getLaborItems }   from '../utils/api'
 
 export default function LaborCalculatorModal({ isOpen, onClose, onCalculate }) {
-  const [roles, setRoles] = useState({})
-  const [assignments, setAssignments] = useState([])
-  const [error, setError] = useState(null)
+  const [data, setData]          = useState({})
+  const [assignments, setAssign] = useState([])
 
   useEffect(() => {
-    if (!isOpen) return
-    axios.get('http://localhost:5001/api/expenses/labor')
+    getLaborItems()
       .then(res => {
+        // res.data is an array of { labor_role, event_type, cost }
         const map = {}
         res.data.forEach(r => {
-          map[r.labor_role] = map[r.labor_role] || []
-          map[r.labor_role].push({ event_type: r.event_type, cost: r.cost })
+          if (!map[r.labor_role]) map[r.labor_role] = {}
+          map[r.labor_role][r.event_type] = parseFloat(r.cost)
         })
-        setRoles(map)
+        setData(map)
       })
-      .catch(() => setError('Failed to load labor roles'))
-  }, [isOpen])
+      .catch(err => {
+        console.error('Failed to load labor roles', err)
+        setData({})
+      })
+  }, [])
 
-  const handleAssignChange = (role, field, value) => {
-    setAssignments(a => {
-      const idx = a.findIndex(x => x.role === role)
-      if (idx === -1) {
-        const fresh = { role, event_type: '', count: 0 }
-        fresh[field] = field === 'count' ? Number(value) : value
-        return [...a, fresh]
-      }
-      const updated = [...a]
-      updated[idx] = {
-        ...updated[idx],
-        [field]: field === 'count' ? Number(value) : value
-      }
-      return updated
+  if (!isOpen) return null
+
+  const addRole = () => setAssign(a => [...a, { role:'', eventType:'', count:0 }])
+  const update  = (idx, key, val) => {
+    setAssign(a => {
+      const copy = [...a]
+      copy[idx][key] = key === 'count' ? +val || 0 : val
+      return copy
     })
   }
 
-  const handleCalculate = async () => {
+  const handleCompute = async () => {
     try {
-      const res = await axios.post(
-        'http://localhost:5001/api/expenses/calculate/labor',
-        { assignments }
-      )
-      onCalculate({
-        total: res.data.total_labor,
-        assignments
-      })
+      const { data: res } = await calculateLabor({ assignments })
+      onCalculate({ total: res.total_labor, assignments })
       onClose()
-    } catch {
-      setError('Calculation failed')
+    } catch (err) {
+      console.error(err)
+      alert('Error calculating labor cost')
     }
   }
 
-  if (!isOpen) return null
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white p-6 rounded shadow-lg w-full max-w-lg">
-        <h2 className="text-xl font-semibold mb-4">👷 Labor Calculator</h2>
-        {error && <p className="text-red-600 mb-2">{error}</p>}
-        <div className="space-y-4 max-h-64 overflow-y-auto">
-          {Object.entries(roles).map(([role, events]) => (
-            <div key={role} className="border p-2 rounded">
-              <h3 className="font-medium mb-2">{role}</h3>
-              <div className="flex space-x-2 mb-2">
-                <select
-                  onChange={e => handleAssignChange(role, 'event_type', e.target.value)}
-                  className="flex-1 border px-2 py-1 rounded"
-                >
-                  <option value="">Event type…</option>
-                  {events.map(ev => (
-                    <option key={ev.event_type} value={ev.event_type}>
-                      {ev.event_type} (${ev.cost})
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="number"
-                  min="0"
-                  placeholder="Count"
-                  onChange={e => handleAssignChange(role, 'count', e.target.value)}
-                  className="w-20 border px-2 py-1 rounded"
-                />
-              </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg w-full max-w-xl p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-xl font-semibold">👷 Labor Calculator</h3>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">&times;</button>
+        </div>
+
+        <div className="space-y-4 mb-4 max-h-60 overflow-auto">
+          {assignments.map((asgn, i) => (
+            <div key={i} className="grid grid-cols-3 gap-2 items-center">
+              <select
+                value={asgn.role}
+                onChange={e => update(i, 'role', e.target.value)}
+                className="border p-2 rounded"
+              >
+                <option value="">Select Role</option>
+                {Object.keys(data).map(r => <option key={r}>{r}</option>)}
+              </select>
+
+              <select
+                value={asgn.eventType}
+                onChange={e => update(i, 'eventType', e.target.value)}
+                className="border p-2 rounded"
+                disabled={!asgn.role}
+              >
+                <option value="">Select Event</option>
+                {asgn.role && Object.keys(data[asgn.role]).map(ev => (
+                  <option key={ev}>{ev}</option>
+                ))}
+              </select>
+
+              <input
+                type="number"
+                min="0"
+                placeholder="Count"
+                value={asgn.count}
+                onChange={e => update(i, 'count', e.target.value)}
+                className="border p-2 rounded text-right"
+              />
             </div>
           ))}
         </div>
-        <div className="flex justify-end space-x-2 mt-4">
-          <button onClick={onClose} className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400">
-            Cancel
-          </button>
-          <button
-            onClick={handleCalculate}
-            className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
-          >
-            Calculate
-          </button>
-        </div>
+
+        <button onClick={addRole} className="mb-4 text-blue-600 hover:underline">
+          + Add Role
+        </button>
+
+        <button
+          onClick={handleCompute}
+          className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+        >
+          Calculate & Save
+        </button>
       </div>
     </div>
   )
