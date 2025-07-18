@@ -1,34 +1,38 @@
-// src/utils/api.js
 import axios from 'axios'
 
-// Base Axios instance, reads from VITE_API_URL or falls back to localhost
 export const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001/api',
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5001/api'
 })
 
-/** Bookings CRUD **/
-export const getBookings    = ()                 => API.get('/bookings/')
-export const getBooking     = id                 => API.get(`/bookings/${id}`)
-export const createBooking  = bookingData        => API.post('/bookings/', bookingData)
-export const updateBooking  = (id, updateData)  => API.put(`/bookings/${id}`, updateData)
-export const deleteBooking  = id                 => API.delete(`/bookings/${id}`)
+// Bookings
+export const getBookings   = () => API.get('/bookings/')
+export const createBooking = b  => API.post('/bookings/', b)
 
-/** Clients CRUD **/
-export const getClients     = ()                 => API.get('/clients/')
-export const getClient      = id                 => API.get(`/clients/${id}`)
-export const createClient   = clientData         => API.post('/clients/', clientData)
-export const updateClient   = (id, clientData)  => API.put(`/clients/${id}`, clientData)
-export const deleteClient   = id                 => API.delete(`/clients/${id}`)
+// Clients
+export const getClients    = () => API.get('/clients/')
+export const createClient  = c  => API.post('/clients/', c)
+export const updateClient  = (id,c)=> API.put(`/clients/${id}`, c)
+export const deleteClient  = id  => API.delete(`/clients/${id}`)
 
-/** Expense Calculators **/
-export const calculateFood      = payload => API.post('/expenses/calculate/food', payload)
-export const calculateSupplies  = payload => API.post('/expenses/calculate/supplies', payload)
-export const calculateLabor     = payload => API.post('/expenses/calculate/labor', payload)
+// Food
+export const getFoodItems     = ()      => API.get('/expenses/food')
+export const addFoodItem      = f       => API.post('/expenses/food', f)
+export const updateFoodItem   = (item,f)=> API.put(`/expenses/food/${item}`, f)
+export const deleteFoodItem   = item    => API.delete(`/expenses/food/${item}`)
 
-// Expense item listings
-export const getFoodItems     = () => API.get('/expenses/food')
-export const getSuppliesItems = () => API.get('/expenses/supplies')
-export const getLaborItems    = () => API.get('/expenses/labor')
+// Supplies
+export const getSuppliesItems   = ()        => API.get('/expenses/supplies')
+export const addSupplyItem      = s         => API.post('/expenses/supplies', s)
+export const updateSupplyItem   = (item,s)  => API.put(`/expenses/supplies/${item}`, s)
+export const deleteSupplyItem   = item      => API.delete(`/expenses/supplies/${item}`)
+
+// Labor
+export const getLaborItems     = ()            => API.get('/expenses/labor')
+export const addLaborItem      = l             => API.post('/expenses/labor', l)
+export const updateLaborItem   = (r,e,l)       => API.put(`/expenses/labor/${r}/${e}`, l)
+export const deleteLaborItem   = (r,e)         => API.delete(`/expenses/labor/${r}/${e}`)
+
+// Calculators
+export const calculateFood     = payload => API.post('/expenses/calculate/food', payload)
+export const calculateSupplies = payload => API.post('/expenses/calculate/supplies', payload)
+export const calculateLabor    = payload => API.post('/expenses/calculate/labor', payload)

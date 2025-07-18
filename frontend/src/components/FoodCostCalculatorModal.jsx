@@ -1,7 +1,6 @@
-// src/components/FoodCalculatorModal.jsx
 import React, { useState, useEffect } from 'react'
-import ReactDOM                         from 'react-dom'
-import { calculateFood, getFoodItems }  from '../utils/api'
+import ReactDOM                        from 'react-dom'
+import { getFoodItems, calculateFood } from '../utils/api'
 
 export default function FoodCalculatorModal({ isOpen, onClose, onCalculate }) {
   const [headcount, setHeadcount] = useState(0)
@@ -10,7 +9,7 @@ export default function FoodCalculatorModal({ isOpen, onClose, onCalculate }) {
 
   useEffect(() => {
     getFoodItems()
-      .then(res => setItems(res.data))
+      .then(r => setItems(r.data))
       .catch(() => setItems([]))
   }, [])
 
@@ -25,7 +24,7 @@ export default function FoodCalculatorModal({ isOpen, onClose, onCalculate }) {
       onCalculate({ total: data.total_food, headcount, menu: selected })
       onClose()
     } catch {
-      alert('Failed to calculate food cost')
+      alert('Error calculating food cost')
     }
   }
 
@@ -50,7 +49,7 @@ export default function FoodCalculatorModal({ isOpen, onClose, onCalculate }) {
           <input
             type="number"
             value={headcount}
-            onChange={e => setHeadcount(+e.target.value || 0)}
+            onChange={e => setHeadcount(+e.target.value||0)}
             className="w-full border p-2 rounded mt-1"
           />
         </label>
@@ -64,9 +63,7 @@ export default function FoodCalculatorModal({ isOpen, onClose, onCalculate }) {
                 onChange={() => toggleItem(item)}
                 className="mr-2"
               />
-              <span>
-                {item} — ${amount} per {quantity}
-              </span>
+              <span>{item} — ${amount} per {quantity}</span>
             </label>
           ))}
         </div>
