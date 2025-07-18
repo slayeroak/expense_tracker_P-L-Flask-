@@ -51,6 +51,7 @@ export default function SuppliesCalculatorModal({ isOpen, onClose, onCalculate }
                 type="number"
                 min="0"
                 placeholder="0"
+                value={orders[item] || ''} 
                 onChange={e => handleQtyChange(item, e.target.value)}
                 className="w-16 border p-1 rounded text-right"
               />
